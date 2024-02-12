@@ -1,0 +1,25 @@
+{
+  "name": "robocreate-backend",
+  "version": "0.0.0",
+  "description": "backend infra for robocreate",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/therealrinku/robocreate-backend.git"
+  },
+  "author": "Rinku Chaudhari",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/therealrinku/robocreate-backend/issues"
+  },
+  "homepage": "https://github.com/therealrinku/robocreate-backend#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3"
+  }
+}
