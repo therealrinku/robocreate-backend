@@ -8,14 +8,12 @@ const createUsersTableQuery = `
 );
 `;
 
-//NEED FIXING :( -->> SAD FACE
 async function createTables() {
   try {
     //create users table
-    await pgClient.connect();
-    console.log("Connected to the database, now creating tables!");
     await pgClient.query(createUsersTableQuery);
     console.log("Table Created Successfully!");
+    process.exit(0);
   } catch (err) {
     console.log("Something went wrong while creating tables", err);
   }
