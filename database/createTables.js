@@ -1,4 +1,4 @@
-const pgClient = require("./db");
+const { db } = require("./db");
 
 const createUsersTableQuery = `
   CREATE TABLE IF NOT EXISTS users (
@@ -11,7 +11,9 @@ const createUsersTableQuery = `
 async function createTables() {
   try {
     //create users table
-    await pgClient.query(createUsersTableQuery);
+    await db.connect();
+    console.log("Connected to the Database Successfully!");
+    await db.query(createUsersTableQuery);
     console.log("Table Created Successfully!");
     process.exit(0);
   } catch (err) {

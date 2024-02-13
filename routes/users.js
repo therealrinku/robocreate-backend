@@ -1,0 +1,48 @@
+const router = require("express").Router();
+const { db } = require("../database/db");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
+const { verifyJWT } = require("../middlewares/verifyJWT");
+
+router.get("/me", verifyJWT, async function (req, res) {
+  try {
+    const userEmail = req.authUserEmail;
+
+    const response = await db.query(`select * from users where email='${userEmail}'`);
+    res.status(200).send({ email: userEmail, id: response.rows[0].id });
+  } catch (err) {
+    res.status(500).send({ error: true, errorMessage: err.message });
+  }
+});
+
+router.post("/session", async function (req, res) {
+  const { email, password: rawPassword } = req.body;
+
+  try {
+    const response = await db.query(`select * from users where email='${email}'`);
+
+    if (response.rowCount > 0) {
+      //check password
+
+      const isPasswordMatch = await bcrypt.compare(rawPassword, response.rows[0].password);
+      if (isPasswordMatch) {
+        const accessToken = jwt.sign({ email }, process.env.JWT_SECRET_KEY, { expiresIn: "2d" });
+
+        res.cookie("robocreateTkn", accessToken, {
+          maxAge: "172800000",
+          httpOnly: true,
+        });
+
+        res.status(200).send({ success: true });
+        return;
+      }
+    }
+
+    throw new Error("Email or Password is Invalid");
+  } catch (err) {
+    res.status(401).send({ error: true, errorMessage: err.message });
+  }
+});
+
+module.exports = router;
