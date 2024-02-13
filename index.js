@@ -4,7 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
-var cookieParser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 
 const { db } = require("./database/db");
 
@@ -21,6 +21,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 const usersRoute = require("./routes/users");
+const connectionsRoute = require("./routes/connections");
+
 app.use("/users", usersRoute);
+app.use("/connections", connectionsRoute);
 
 server.listen(process.env.PORT, () => console.log(`Express is running at port ${process.env.PORT}`));

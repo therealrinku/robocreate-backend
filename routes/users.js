@@ -10,9 +10,9 @@ router.get("/me", verifyJWT, async function (req, res) {
     const userEmail = req.authUserEmail;
 
     const response = await db.query(`select * from users where email='${userEmail}'`);
-    res.status(200).send({ email: userEmail, id: response.rows[0].id });
+    res.status(200).send({ email: userEmail, id: response.rows[0].id, connections: response.rows[0].connections });
   } catch (err) {
-    res.status(500).send({ error: true, errorMessage: err.message });
+    res.status(500).send({ error: err.message });
   }
 });
 
@@ -41,7 +41,7 @@ router.post("/session", async function (req, res) {
 
     throw new Error("Email or Password is Invalid");
   } catch (err) {
-    res.status(401).send({ error: true, errorMessage: err.message });
+    res.status(401).send({ error: err.message });
   }
 });
 
