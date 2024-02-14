@@ -30,8 +30,10 @@ router.post("/session", async function (req, res) {
         const accessToken = jwt.sign({ email }, process.env.JWT_SECRET_KEY, { expiresIn: "2d" });
 
         res.cookie("robocreateTkn", accessToken, {
-          maxAge: "172800000",
+          maxAge: 172800000,
           httpOnly: true,
+          secure: true,
+          sameSite: "none",
         });
 
         res.status(200).send({ success: true });
