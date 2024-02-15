@@ -2,13 +2,7 @@ const jwt = require("jsonwebtoken");
 
 async function verifyJWT(req, res, next) {
   try {
-    //in nextjs server side, req.cookies is empty object for some reason
-    //so this is a hack to get cookie from header while server side rendering
-
-    const temp = req.headers?.["set-cookie"]?.[0];
-    const accessTokenFromHeader = temp ? JSON.parse(temp) : undefined;
-
-    const accessToken = req.cookies["robocreateTkn"] || accessTokenFromHeader;
+    const accessToken = req.cookies["robocreateTkn"];
 
     if (!accessToken) return res.status(401).json({ error: "No token provided" });
 

@@ -47,4 +47,19 @@ router.post("/session", async function (req, res) {
   }
 });
 
+router.delete("/session", verifyJWT, async function (req, res) {
+  try {
+    res.cookie("robocreateTkn", "", {
+      maxAge: 0,
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+
+    res.status(200).send({ success: true, message: "Logout success" });
+  } catch (err) {
+    res.status(401).send({ error: err.message });
+  }
+});
+
 module.exports = router;
