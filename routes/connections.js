@@ -94,8 +94,6 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
     //1 fb page :( minimal support >:<
     //add for more later ✨
     if (connectionFor === "facebook") {
-      await db.query(`update users set connections='facebook' where id='${userId}'`);
-
       // STEP 1 => get app scoped user id aka user id
       const { id: appScopedUserId } = await Fb.getMe(token);
       // STEP 2 => get user's long lived access token
@@ -106,14 +104,19 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
 
       const { access_token: pageAccessToken, id: pageId, name: pageName } = firstPage;
 
+      await db.query(`update users set connections='facebook' where id='${userId}'`);
+
       await db.query(
         `insert into connections(user_id,connection_type, page_name,page_id, access_token) values('${userId}', 'facebook','${pageName}', '${pageId}', '${pageAccessToken}')`
       );
+
+      res.status(200).send({
+        success: true,
+        connectionDetail: { connection_type: "facebook", page_id: pageId, page_name: pageName },
+      });
     }
 
-    res
-      .status(200)
-      .send({ success: true, connectionDetail: { connection_type: "facebook", page_id: pageId, page_name: pageName } });
+    throw new Error("only facebook is supported.");
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
