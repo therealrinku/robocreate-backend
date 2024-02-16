@@ -56,6 +56,12 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
       );
 
       const { page_id: pageId, access_token: pageAccessToken } = resp.rows[0];
+
+      if (!pageId || !pageAccessToken) {
+        res.status(200).send({ success: true, posts: [] });
+        return;
+      }
+
       const pagePosts = await Fb.getPagePosts(pageId, pageAccessToken);
 
       res.status(200).send({ success: true, posts: pagePosts });
