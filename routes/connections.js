@@ -111,7 +111,9 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
       );
     }
 
-    res.status(200).send({ success: true });
+    res
+      .status(200)
+      .send({ success: true, connectionDetail: { connection_type: "facebook", page_id: pageId, page_name: pageName } });
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
