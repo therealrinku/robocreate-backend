@@ -5,6 +5,38 @@ const router = require("express").Router();
 
 const { Fb } = require("../externals/fb");
 
+router.delete("/removeConnection", verifyJWT, async function (req, res) {
+  try {
+    const { connectionFor } = req.body;
+    const userEmail = req.authUserEmail;
+
+    if (!connectionFor) {
+      throw new Error("connectionFor and token are required in the body.");
+    }
+    if (connectionFor !== "facebook") {
+      throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
+    }
+
+    const response = await db.query(`select * from users where email='${userEmail}'`);
+
+    //save token to the connections table
+    const userId = response.rows[0].id;
+
+    if (connectionFor === "facebook") {
+      //delete fb connection, meaning make connections string null  for now,
+      //ofc needs update once we support multiple platforms
+      db.query(`update users set connections='${null}' where id='${userId}'`);
+
+      //remove channels from channels db
+      db.query(`delete from channels where user_id='${userId}' and connection_type='facebook'`);
+    }
+
+    res.status(200).send({ success: true });
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+});
+
 router.get("/getLatestPosts", verifyJWT, async function (req, res) {
   try {
     //per page => 10 for now
@@ -14,7 +46,6 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
 
     const response = await db.query(`select * from users where email='${userEmail}'`);
 
-    //save token to the connections table
     const userId = response.rows[0].id;
 
     //add for more later ✨
@@ -56,14 +87,15 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
     const { connectionFor, token } = req.body;
     const userEmail = req.authUserEmail;
 
-    //validate
     if (!connectionFor || !token) {
       throw new Error("connectionFor and token are required in the body.");
+    }
+    if (connectionFor !== "facebook") {
+      throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
     }
 
     const response = await db.query(`select * from users where email='${userEmail}'`);
 
-    //save token to the connections table
     const userId = response.rows[0].id;
 
     //supports fb only for now
@@ -72,7 +104,7 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
     if (connectionFor === "facebook") {
       await db.query(`update users set connections='facebook' where id='${userId}'`);
 
-      // STEP 1 => get user's long lived access token
+      // STEP 1 => get app scoped user id aka user id
       const { id: appScopedUserId } = await Fb.getMe(token);
       // STEP 2 => get user's long lived access token
       const userLongLivedAccessToken = await Fb.getUserLongLivedAccessToken(token);
