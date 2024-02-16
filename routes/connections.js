@@ -3,6 +3,8 @@ const { verifyJWT } = require("../middlewares/verifyJWT");
 
 const router = require("express").Router();
 
+const { Fb } = require("../externals/fb");
+
 router.get("/getLatestPosts", verifyJWT, async function (req, res) {
   try {
     //per page => 10 for now
@@ -18,6 +20,7 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
     //add for more later ✨
     if (connectionFor === "facebook") {
       ///get fb posts
+      //TODO: ENCAPSULATE THIS IN fb.js
       const resp = await db.query(`select fb_access_token from connections where user_id = '${userId}'`);
       const fb_access_token = resp.rows[0].fb_access_token;
       const fbResp = await (
@@ -39,7 +42,7 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
       ).json();
 
       res.status(200).send({ success: true, posts: postsResp });
-      return
+      return;
     }
 
     res.status(200).send({ success: true });
@@ -53,15 +56,35 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
     const { connectionFor, token } = req.body;
     const userEmail = req.authUserEmail;
 
+    //validate
+    if (!connectionFor || !token) {
+      throw new Error("connectionFor and token are required in the body.");
+    }
+
     const response = await db.query(`select * from users where email='${userEmail}'`);
 
     //save token to the connections table
     const userId = response.rows[0].id;
 
+    //supports fb only for now
+    //1 fb page :( minimal support >:<
     //add for more later ✨
     if (connectionFor === "facebook") {
       await db.query(`update users set connections='facebook' where id='${userId}'`);
-      await db.query(`insert into connections(user_id,fb_access_token) values('${userId}','${token}')`);
+
+      // STEP 1 => get user's long lived access token
+      const { id: appScopedUserId } = await Fb.getMe(token);
+      // STEP 2 => get user's long lived access token
+      const userLongLivedAccessToken = await Fb.getUserLongLivedAccessToken(token);
+      // STEP 3 => get the first page's long lived access token
+      // Support for multiple pages coming soon ✨
+      const firstPage = await Fb.getFirstPage(userLongLivedAccessToken, appScopedUserId);
+
+      const { access_token: pageAccessToken, id: pageId, name: pageName } = firstPage;
+
+      await db.query(
+        `insert into connections(user_id,connection_type, page_name,page_id, access_token) values('${userId}', 'facebook','${pageName}', '${pageId}', '${pageAccessToken}')`
+      );
     }
 
     res.status(200).send({ success: true });
