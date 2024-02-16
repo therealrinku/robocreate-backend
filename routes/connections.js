@@ -28,7 +28,7 @@ router.delete("/removeConnection", verifyJWT, async function (req, res) {
       await db.query(`update users set connections='${null}' where id='${userId}'`);
 
       //remove channels from channels db
-      await db.query(`delete from channels where user_id='${userId}' and connection_type='facebook'`);
+      await db.query(`delete from connections where user_id='${userId}' and connection_type='facebook'`);
     }
 
     res.status(200).send({ success: true });
