@@ -7,11 +7,11 @@ const { Fb } = require("../externals/fb");
 
 router.delete("/removeConnection", verifyJWT, async function (req, res) {
   try {
-    const { connectionFor } = req.body;
+    const { connectionFor } = req.params;
     const userEmail = req.authUserEmail;
 
     if (!connectionFor) {
-      throw new Error("connectionFor and token are required in the body.");
+      throw new Error("connectionFor is required in the params.");
     }
     if (connectionFor !== "facebook") {
       throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
