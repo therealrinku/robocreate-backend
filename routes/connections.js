@@ -25,10 +25,10 @@ router.delete("/removeConnection", verifyJWT, async function (req, res) {
     if (connectionFor === "facebook") {
       //delete fb connection, meaning make connections string null  for now,
       //ofc needs update once we support multiple platforms
-      db.query(`update users set connections='${null}' where id='${userId}'`);
+      await db.query(`update users set connections='${null}' where id='${userId}'`);
 
       //remove channels from channels db
-      db.query(`delete from channels where user_id='${userId}' and connection_type='facebook'`);
+      await db.query(`delete from channels where user_id='${userId}' and connection_type='facebook'`);
     }
 
     res.status(200).send({ success: true });
@@ -50,29 +50,15 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
 
     //add for more later ✨
     if (connectionFor === "facebook") {
-      ///get fb posts
-      //TODO: ENCAPSULATE THIS IN fb.js
-      const resp = await db.query(`select fb_access_token from connections where user_id = '${userId}'`);
-      const fb_access_token = resp.rows[0].fb_access_token;
-      const fbResp = await (
-        await fetch(`${process.env.FB_GRAPH_API_BASE_URL}/me?access_token=${fb_access_token}&fields=id,accounts`)
-      ).json();
+      ///get fb posts, we can just page_name selector too for specific page later
+      const resp = await db.query(
+        `select page_id, access_token from connections where user_id = '${userId}' and connection_type='facebook'`
+      );
 
-      const pgAccessToken = fbResp.accounts.data[0].access_token;
-      const pgId = fbResp.accounts.data[0].id;
+      const { page_id: pageId, access_token: pageAccessToken } = resp.rows[0];
+      const pagePosts = await Fb.getPagePosts(pageId, pageAccessToken);
 
-      const postsResp = await (
-        await fetch(
-          `${process.env.FB_GRAPH_API_BASE_URL}/${pgId}/feed?fields=likes,comments.limit(10),shares,full_picture,permalink_url`,
-          {
-            headers: {
-              Authorization: `Bearer ${pgAccessToken}`,
-            },
-          }
-        )
-      ).json();
-
-      res.status(200).send({ success: true, posts: postsResp });
+      res.status(200).send({ success: true, posts: pagePosts });
       return;
     }
 

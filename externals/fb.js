@@ -6,6 +6,25 @@
 
 const { FB_GRAPH_API_BASE_URL: fbGraphApiBaseUrl, FB_APP_SECRET: fbAppSecret } = process.env;
 
+async function getPagePosts(pageId, pageAccessToken) {
+  if (!pageId || !pageAccessToken) {
+    throw new Error("Not enough info to get page posts");
+  }
+
+  const postsRespJson = await (
+    await fetch(
+      `${fbGraphApiBaseUrl}/${pageId}/feed?fields=likes,comments.limit(10),shares,full_picture,permalink_url`,
+      {
+        headers: {
+          Authorization: `Bearer ${pageAccessToken}`,
+        },
+      }
+    )
+  ).json();
+
+  return postsRespJson;
+}
+
 async function getMe(shortLivedAccessToken) {
   if (!shortLivedAccessToken) {
     throw new Error("Invalid access token");
@@ -57,6 +76,7 @@ async function getFirstPage(userLongLivedAccessToken, appScopedUserId) {
 
 const Fb = {
   getMe: getMe,
+  getPagePosts: getPagePosts,
   getUserLongLivedAccessToken: getUserLongLivedAccessToken,
   getFirstPage: getFirstPage,
 };
