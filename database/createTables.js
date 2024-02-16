@@ -14,8 +14,11 @@ const createConnectionsTableQuery = `
   create table if not exists connections (
     id UUID DEFAULT uuid_generate_v4() NOT NULL,
     user_id UUID NOT NULL,
+    connection_type TEXT NOT NULL,
+    page_name TEXT NOT NULL,
+    page_id TEXT NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id),
-    fb_access_token TEXT DEFAULT NULL
+    access_token TEXT DEFAULT NULL
 );
 `;
 
