@@ -114,6 +114,8 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
         success: true,
         connectionDetail: { connection_type: "facebook", page_id: pageId, page_name: pageName },
       });
+
+      return;
     }
 
     throw new Error("only facebook is supported.");
