@@ -7,7 +7,7 @@ const { Fb } = require("../externals/fb");
 
 router.delete("/removeConnection", verifyJWT, async function (req, res) {
   try {
-    const { connectionFor } = req.params;
+    const { connectionFor } = req.query;
     const userEmail = req.authUserEmail;
 
     if (!connectionFor) {
