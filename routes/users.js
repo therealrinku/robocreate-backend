@@ -10,7 +10,7 @@ router.get("/me", verifyJWT, async function (req, res) {
     const userEmail = req.authUserEmail;
 
     //MAYBE COMBINE THESE TWO QUERIES ???>>
-    const userResponse = await db.query(`select * from users where email='${userEmail}'`);
+    const userResponse = await db.query(`select id from users where email='${userEmail}'`);
 
     const userConnectionsResponse = await db.query(
       `select page_id, page_name, connection_type from connections where user_id='${userResponse.rows[0].id}'`
@@ -21,7 +21,6 @@ router.get("/me", verifyJWT, async function (req, res) {
       connectedChannel: userConnectionsResponse.rows[0],
       email: userEmail,
       id: userResponse.rows[0].id,
-      connections: userResponse.rows[0].connections,
     });
   } catch (err) {
     res.status(500).send({ error: err.message });

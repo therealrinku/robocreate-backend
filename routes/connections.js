@@ -23,11 +23,9 @@ router.delete("/removeConnection", verifyJWT, async function (req, res) {
     const userId = response.rows[0].id;
 
     if (connectionFor === "facebook") {
-      //delete fb connection, meaning make connections string null  for now,
-      //ofc needs update once we support multiple platforms
-      await db.query(`update users set connections='${null}' where id='${userId}'`);
 
-      //remove channels from channels db
+
+      //remove channels from connections table
       await db.query(`delete from connections where user_id='${userId}' and connection_type='facebook'`);
     }
 
@@ -103,8 +101,6 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
       const firstPage = await Fb.getFirstPage(userLongLivedAccessToken, appScopedUserId);
 
       const { access_token: pageAccessToken, id: pageId, name: pageName } = firstPage;
-
-      await db.query(`update users set connections='facebook' where id='${userId}'`);
 
       await db.query(
         `insert into connections(user_id,connection_type, page_name,page_id, access_token) values('${userId}', 'facebook','${pageName}', '${pageId}', '${pageAccessToken}')`

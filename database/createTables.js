@@ -1,11 +1,11 @@
 const { db } = require("./db");
 
+
 const createUsersTableQuery = `
   create table if not exists users (
     id UUID DEFAULT uuid_generate_v4() NOT NULL,
     email TEXT NOT NULL,
     password TEXT NOT NULL,
-    connections TEXT DEFAULT NULL,
     PRIMARY KEY(id)
 );
 `;
