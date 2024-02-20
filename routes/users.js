@@ -7,20 +7,17 @@ const { verifyJWT } = require("../middlewares/verifyJWT");
 
 router.get("/me", verifyJWT, async function (req, res) {
   try {
-    const userEmail = req.authUserEmail;
-
+    const reqUser = req.user
     //MAYBE COMBINE THESE TWO QUERIES ???>>
-    const userResponse = await db.query(`select id from users where email='${userEmail}'`);
-
     const userConnectionsResponse = await db.query(
-      `select page_id, page_name, connection_type from connections where user_id='${userResponse.rows[0].id}'`
+      `select page_id, page_name, connection_type from connections where user_id='${reqUser.id}'`
     );
 
     res.status(200).send({
       //since user can connect one channel right now, doing rows[0] here
       connectedChannel: userConnectionsResponse.rows[0],
-      email: userEmail,
-      id: userResponse.rows[0].id,
+      email: reqUser.email,
+      id: reqUser.id
     });
   } catch (err) {
     res.status(500).send({ error: err.message });

@@ -9,7 +9,7 @@ router.post("/createPost", verifyJWT, async function (req, res) {
   try {
     const { connectionFor } = req.query;
 
-    const userEmail = req.authUserEmail;
+    const reqUser = req.user;
 
     if (!connectionFor) {
       throw new Error("connectionFor is required in the params.");
@@ -21,12 +21,9 @@ router.post("/createPost", verifyJWT, async function (req, res) {
       throw new Error("request body is required.");
     }
 
-    const userResp = await db.query(`select id from users where email='${userEmail}'`);
-    const userId = userResp.rows[0].id;
-
     if (connectionFor === "facebook") {
       const resp = await db.query(
-        `select page_id, access_token from connections where user_id = '${userId}' and connection_type='facebook'`
+        `select page_id, access_token from connections where user_id = '${reqUser.id}' and connection_type='facebook'`
       );
 
       const pageId = resp.rows[0].page_id;
@@ -43,7 +40,7 @@ router.post("/createPost", verifyJWT, async function (req, res) {
 router.delete("/removeConnection", verifyJWT, async function (req, res) {
   try {
     const { connectionFor } = req.query;
-    const userEmail = req.authUserEmail;
+    const reqUser = req.user;
 
     if (!connectionFor) {
       throw new Error("connectionFor is required in the params.");
@@ -52,14 +49,11 @@ router.delete("/removeConnection", verifyJWT, async function (req, res) {
       throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
     }
 
-    const response = await db.query(`select * from users where email='${userEmail}'`);
-
     //save token to the connections table
-    const userId = response.rows[0].id;
 
     if (connectionFor === "facebook") {
       //remove channels from connections table
-      await db.query(`delete from connections where user_id='${userId}' and connection_type='facebook'`);
+      await db.query(`delete from connections where user_id='${reqUser.id}' and connection_type='facebook'`);
     }
 
     res.status(200).send({ success: true });
@@ -72,18 +66,13 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
   try {
     //per page => 10 for now
     const { connectionFor, page = 1 } = req.query;
-
-    const userEmail = req.authUserEmail;
-
-    const response = await db.query(`select * from users where email='${userEmail}'`);
-
-    const userId = response.rows[0].id;
+    const reqUser = req.user;
 
     //add for more later ✨
     if (connectionFor === "facebook") {
       ///get fb posts, we can just page_name selector too for specific page later
       const resp = await db.query(
-        `select page_id, access_token from connections where user_id = '${userId}' and connection_type='facebook'`
+        `select page_id, access_token from connections where user_id = '${reqUser.id}' and connection_type='facebook'`
       );
 
       const { page_id: pageId, access_token: pageAccessToken } = resp.rows[0];
@@ -108,7 +97,7 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
 router.post("/addConnection", verifyJWT, async function (req, res) {
   try {
     const { connectionFor, token } = req.body;
-    const userEmail = req.authUserEmail;
+    const reqUser = req.user;
 
     if (!connectionFor || !token) {
       throw new Error("connectionFor and token are required in the body.");
@@ -116,10 +105,6 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
     if (connectionFor !== "facebook") {
       throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
     }
-
-    const response = await db.query(`select * from users where email='${userEmail}'`);
-
-    const userId = response.rows[0].id;
 
     //supports fb only for now
     //1 fb page :( minimal support >:<
@@ -136,7 +121,7 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
       const { access_token: pageAccessToken, id: pageId, name: pageName } = firstPage;
 
       await db.query(
-        `insert into connections(user_id,connection_type, page_name,page_id, access_token) values('${userId}', 'facebook','${pageName}', '${pageId}', '${pageAccessToken}')`
+        `insert into connections(user_id,connection_type, page_name,page_id, access_token) values('${reqUser.id}', 'facebook','${pageName}', '${pageId}', '${pageAccessToken}')`
       );
 
       res.status(200).send({
