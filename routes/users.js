@@ -35,7 +35,7 @@ router.post("/session", async function (req, res) {
 
       const isPasswordMatch = await bcrypt.compare(rawPassword, response.rows[0].password);
       if (isPasswordMatch) {
-        const accessToken = jwt.sign({ email }, process.env.JWT_SECRET_KEY, { expiresIn: "2d" });
+        const accessToken = jwt.sign({ email, id: response.rows[0].id }, process.env.JWT_SECRET_KEY, { expiresIn: "2d" });
 
         res.cookie("robocreateTkn", accessToken, {
           maxAge: 172800000,
