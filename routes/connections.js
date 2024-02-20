@@ -5,6 +5,41 @@ const router = require("express").Router();
 
 const { Fb } = require("../externals/fb");
 
+router.post("/createPost", verifyJWT, async function (req, res) {
+  try {
+    const { connectionFor } = req.query;
+
+    const userEmail = req.authUserEmail;
+
+    if (!connectionFor) {
+      throw new Error("connectionFor is required in the params.");
+    }
+    if (connectionFor !== "facebook") {
+      throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
+    }
+    if (!req.body) {
+      throw new Error("request body is required.");
+    }
+
+    const userResp = await db.query(`select id from users where email='${userEmail}'`);
+    const userId = userResp.rows[0].id;
+
+    if (connectionFor === "facebook") {
+      const resp = await db.query(
+        `select page_id, access_token from connections where user_id = '${userId}' and connection_type='facebook'`
+      );
+
+      const pageId = resp.rows[0].page_id;
+      const pageAccessToken = resp.rows[0].access_token;
+
+      await Fb.createPost(pageId, req.body, pageAccessToken);
+      res.status(200).send({ success: true });
+    }
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+});
+
 router.delete("/removeConnection", verifyJWT, async function (req, res) {
   try {
     const { connectionFor } = req.query;
@@ -23,8 +58,6 @@ router.delete("/removeConnection", verifyJWT, async function (req, res) {
     const userId = response.rows[0].id;
 
     if (connectionFor === "facebook") {
-
-
       //remove channels from connections table
       await db.query(`delete from connections where user_id='${userId}' and connection_type='facebook'`);
     }

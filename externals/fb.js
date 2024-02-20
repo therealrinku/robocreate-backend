@@ -6,6 +6,35 @@
 
 const { FB_GRAPH_API_BASE_URL: fbGraphApiBaseUrl, FB_APP_SECRET: fbAppSecret } = process.env;
 
+async function createPost(pageId, body, pageAccessToken) {
+  if (!pageId || !body || !pageAccessToken) {
+    throw new Error("Not enough info to create post");
+  }
+
+  const responseJson = await (
+    await fetch(
+      `${fbGraphApiBaseUrl}/${pageId}/feed?fields=likes,comments.limit(10),shares,full_picture,permalink_url`,
+      {
+        method: "post",
+        headers: {
+          Authorization: `Bearer ${pageAccessToken}`,
+          "Content-Type": "application/json",
+        },
+        //https://developers.facebook.com/docs/pages-api/posts/
+        // expected body =>  {
+        //   "message":"your_message_text",
+        //   "link":"your_url",
+        //   "published":"false",
+        //   "scheduled_publish_time":"unix_time_stamp_of_a_future_date",
+        // }
+        body: JSON.stringify(body),
+      }
+    )
+  ).json();
+
+  return responseJson;
+}
+
 async function getPagePosts(pageId, pageAccessToken) {
   if (!pageId || !pageAccessToken) {
     throw new Error("Not enough info to get page posts");
@@ -75,6 +104,7 @@ async function getFirstPage(userLongLivedAccessToken, appScopedUserId) {
 }
 
 const Fb = {
+  createPost: createPost,
   getMe: getMe,
   getPagePosts: getPagePosts,
   getUserLongLivedAccessToken: getUserLongLivedAccessToken,
