@@ -7,28 +7,22 @@ const { Fb } = require("../externals/fb");
 
 router.post("/createPost", verifyJWT, async function (req, res) {
   try {
-    const { connectionFor } = req.query;
+    const { connectionId } = req.query;
+    // const reqUser = req.user;
 
-    const reqUser = req.user;
-
-    if (!connectionFor) {
-      throw new Error("connectionFor is required in the params.");
-    }
-    if (connectionFor !== "facebook") {
-      throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
-    }
     if (!req.body) {
       throw new Error("request body is required.");
     }
 
-    if (connectionFor === "facebook") {
-      const resp = await db.query(
-        `select page_id, access_token from connections where user_id = '${reqUser.id}' and connection_type='facebook'`
-      );
+    const connectionInfo = await db.query(`select * from connections where id='${connectionId}'`);
 
-      const pageId = resp.rows[0].page_id;
-      const pageAccessToken = resp.rows[0].access_token;
+    if (connectionInfo.rowCount < 1) {
+      throw new Error("Connection not found.");
+    }
 
+    const { connection_type: connectionType, access_token: pageAccessToken, page_id: pageId } = connectionInfo.rows[0];
+
+    if (connectionType === "facebook") {
       await Fb.createPost(pageId, req.body, pageAccessToken);
       res.status(200).send({ success: true });
     }
@@ -39,23 +33,14 @@ router.post("/createPost", verifyJWT, async function (req, res) {
 
 router.delete("/removeConnection", verifyJWT, async function (req, res) {
   try {
-    const { connectionFor } = req.query;
+    const { connectionId } = req.query;
     const reqUser = req.user;
 
-    if (!connectionFor) {
-      throw new Error("connectionFor is required in the params.");
-    }
-    if (connectionFor !== "facebook") {
-      throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
+    if (!connectionId) {
+      throw new Error("connectionId is required in the params.");
     }
 
-    //save token to the connections table
-
-    if (connectionFor === "facebook") {
-      //remove channels from connections table
-      await db.query(`delete from connections where user_id='${reqUser.id}' and connection_type='facebook'`);
-    }
-
+    await db.query(`delete from connections where id='${connectionId}' and user_id = '${reqUser.id}'`);
     res.status(200).send({ success: true });
   } catch (err) {
     res.status(500).send({ error: err.message });
@@ -64,26 +49,24 @@ router.delete("/removeConnection", verifyJWT, async function (req, res) {
 
 router.get("/getLatestPosts", verifyJWT, async function (req, res) {
   try {
-    //per page => 10 for now
-    const { connectionFor, page = 1 } = req.query;
-    const reqUser = req.user;
+    const { connectionId, page = 1 } = req.query;
+
+    const connectionInfo = await db.query(`select * from connections where id='${connectionId}'`);
+
+    if (connectionInfo.rowCount < 1) {
+      throw new Error("Connection wasn't found.");
+    }
+
+    const { connection_type: connectionType, access_token: pageAccessToken, page_id: pageId } = connectionInfo.rows[0];
 
     //add for more later ✨
-    if (connectionFor === "facebook") {
-      ///get fb posts, we can just page_name selector too for specific page later
-      const resp = await db.query(
-        `select page_id, access_token from connections where user_id = '${reqUser.id}' and connection_type='facebook'`
-      );
-
-      const { page_id: pageId, access_token: pageAccessToken } = resp.rows[0];
-
+    if (connectionType === "facebook") {
       if (!pageId || !pageAccessToken) {
         res.status(200).send({ success: true, posts: [] });
         return;
       }
 
       const pagePosts = await Fb.getPagePosts(pageId, pageAccessToken);
-
       res.status(200).send({ success: true, posts: pagePosts });
       return;
     }
@@ -120,13 +103,13 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
 
       const { access_token: pageAccessToken, id: pageId, name: pageName } = firstPage;
 
-      await db.query(
-        `insert into connections(user_id,connection_type, page_name,page_id, access_token) values('${reqUser.id}', 'facebook','${pageName}', '${pageId}', '${pageAccessToken}')`
+      const resp = await db.query(
+        `insert into connections(user_id,connection_type, page_name,page_id, access_token) values('${reqUser.id}', 'facebook','${pageName}', '${pageId}', '${pageAccessToken}') returning id`
       );
 
       res.status(200).send({
         success: true,
-        connectionDetail: { connection_type: "facebook", page_id: pageId, page_name: pageName },
+        connectionDetail: { connection_type: "facebook", id: resp.rows[0].id, page_id: pageId, page_name: pageName },
       });
 
       return;
