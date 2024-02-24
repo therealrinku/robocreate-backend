@@ -42,7 +42,7 @@ async function getPagePosts(pageId, pageAccessToken) {
 
   const postsRespJson = await (
     await fetch(
-      `${fbGraphApiBaseUrl}/${pageId}/feed?fields=likes,comments.limit(10),shares,full_picture,permalink_url`,
+      `${fbGraphApiBaseUrl}/${pageId}/feed?fields=likes,comments.limit(10),shares,full_picture,permalink_url,message,created_time`,
       {
         headers: {
           Authorization: `Bearer ${pageAccessToken}`,
