@@ -4,6 +4,14 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 const { verifyJWT } = require("../middlewares/verifyJWT");
+const { constants } = require("../utils/constants");
+
+const cookieOptions = {
+  maxAge: 172800000,
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+};
 
 router.get("/me", verifyJWT, async function (req, res) {
   try {
@@ -27,7 +35,6 @@ router.post("/create-account", async function (req, res) {
   const { email, password: rawPassword } = req.body;
 
   try {
-    //check if email is already taken first
     const query = await db.query(`select id from users where email='${email}'`);
 
     if (query.rowCount > 0) {
@@ -41,19 +48,11 @@ router.post("/create-account", async function (req, res) {
         const response = await db.query(
           `insert into users(email, password) values('${email}','${hashedPassword}') returning id`
         );
-
         //create session after signup as well
-        const accessToken = jwt.sign({ email, id: response.rows[0].id }, process.env.JWT_SECRET_KEY, {
-          expiresIn: "2d",
-        });
+        const jwtObject = { email, id: response.rows[0].id };
+        const accessToken = jwt.sign(jwtObject, constants.jwtSecretKey, { expiresIn: constants.jwtExpiry });
 
-        res.cookie("robocreateTkn", accessToken, {
-          maxAge: 172800000,
-          httpOnly: true,
-          secure: true,
-          sameSite: "none",
-        });
-
+        res.cookie("robocreateTkn", accessToken, cookieOptions);
         res.status(200).send({ success: true });
       }
     });
@@ -69,21 +68,12 @@ router.post("/session", async function (req, res) {
     const response = await db.query(`select * from users where email='${email}'`);
 
     if (response.rowCount > 0) {
-      //check password
-
       const isPasswordMatch = await bcrypt.compare(rawPassword, response.rows[0].password);
       if (isPasswordMatch) {
-        const accessToken = jwt.sign({ email, id: response.rows[0].id }, process.env.JWT_SECRET_KEY, {
-          expiresIn: "2d",
-        });
+        const jwtObject = { email, id: response.rows[0].id };
+        const accessToken = jwt.sign(jwtObject, constants.jwtSecretKey, { expiresIn: constants.jwtExpiry });
 
-        res.cookie("robocreateTkn", accessToken, {
-          maxAge: 172800000,
-          httpOnly: true,
-          secure: true,
-          sameSite: "none",
-        });
-
+        res.cookie("robocreateTkn", accessToken, cookieOptions);
         res.status(200).send({ success: true });
         return;
       }
@@ -97,13 +87,13 @@ router.post("/session", async function (req, res) {
 
 router.delete("/session", verifyJWT, async function (req, res) {
   try {
-    res.cookie("robocreateTkn", "", {
+    const deleteSessionCookieOptions = {
       maxAge: 0,
       httpOnly: true,
       secure: true,
       sameSite: "none",
-    });
-
+    };
+    res.cookie("robocreateTkn", "", deleteSessionCookieOptions);
     res.status(200).send({ success: true, message: "Logout success" });
   } catch (err) {
     res.status(401).send({ error: err.message });

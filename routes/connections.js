@@ -1,20 +1,20 @@
 const { db } = require("../database/db");
 const { verifyJWT } = require("../middlewares/verifyJWT");
-
 const router = require("express").Router();
-
 const { Fb } = require("../externals/fb");
 
 router.post("/createPost", verifyJWT, async function (req, res) {
   try {
     const { connectionId } = req.query;
-    // const reqUser = req.user;
+    const reqUser = req.user;
 
     if (!req.body) {
       throw new Error("request body is required.");
     }
 
-    const connectionInfo = await db.query(`select * from connections where id='${connectionId}'`);
+    const connectionInfo = await db.query(
+      `select * from connections where id='${connectionId}' and user_id=${reqUser.id}`
+    );
 
     if (connectionInfo.rowCount < 1) {
       throw new Error("Connection not found.");
@@ -71,7 +71,7 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
       return;
     }
 
-    res.status(200).send({ success: true });
+    res.status(200).send({ success: true, posts: [] });
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
@@ -89,16 +89,13 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
       throw new Error("unsupported connectionFor value, only supported value is 'facebook'.");
     }
 
-    //supports fb only for now
-    //1 fb page :( minimal support >:<
-    //add for more later ✨
+    //supports connecting only one fb page at a time
     if (connectionFor === "facebook") {
       // STEP 1 => get app scoped user id aka user id
       const { id: appScopedUserId } = await Fb.getMe(token);
       // STEP 2 => get user's long lived access token
       const userLongLivedAccessToken = await Fb.getUserLongLivedAccessToken(token);
       // STEP 3 => get the first page's long lived access token
-      // Support for multiple pages coming soon ✨
       const firstPage = await Fb.getFirstPage(userLongLivedAccessToken, appScopedUserId);
 
       const { access_token: pageAccessToken, id: pageId, name: pageName } = firstPage;
@@ -114,8 +111,6 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
 
       return;
     }
-
-    throw new Error("only facebook is supported.");
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
