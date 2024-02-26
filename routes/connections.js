@@ -13,7 +13,7 @@ router.post("/createPost", verifyJWT, async function (req, res) {
     }
 
     const connectionInfo = await db.query(
-      `select * from connections where id='${connectionId}' and user_id=${reqUser.id}`
+      `select * from connections where id='${connectionId}' and user_id='${reqUser.id}'`
     );
 
     if (connectionInfo.rowCount < 1) {

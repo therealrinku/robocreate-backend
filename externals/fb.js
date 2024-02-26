@@ -20,13 +20,13 @@ async function createPost(pageId, body, pageAccessToken) {
     body: body,
   });
 
-  const postId = await response.json()?.id;
+  const resp = await response.json();
 
-  if (!postId) {
+  if (!resp.id) {
     throw new Error("Something went wrong while publishing the post.");
   }
 
-  return postId;
+  return resp.id;
 }
 
 async function getPagePosts(pageId, pageAccessToken) {
