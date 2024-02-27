@@ -1,7 +1,7 @@
 const { db } = require("../database/db");
 const { verifyJWT } = require("../middlewares/verifyJWT");
 const router = require("express").Router();
-const { Fb } = require("../externals/fb");
+const { Fb } = require("../channels/fb");
 
 router.post("/createPost", verifyJWT, async function (req, res) {
   try {
