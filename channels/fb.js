@@ -4,8 +4,8 @@ Facebook API handler
   post docs: https://developers.facebook.com/docs/pages-api/posts/
 */
 
-const { handleChannelApiCall } = require("../utils/channelApi");
-const { constants } = require("../utils/constants");
+const { handleChannelApiCall } = require("../helpers/channelApi");
+const { constants } = require("../helpers/constants");
 
 async function createPost(pageId, body, pageAccessToken) {
   if (!pageId || !body || !pageAccessToken) {

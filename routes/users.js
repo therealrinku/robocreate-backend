@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 const { verifyJWT } = require("../middlewares/verifyJWT");
-const { constants } = require("../utils/constants");
+const { constants } = require("../helpers/constants");
 
 const cookieOptions = {
   maxAge: 172800000,
