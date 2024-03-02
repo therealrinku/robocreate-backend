@@ -146,7 +146,7 @@ async function getPageInsights(pageId, pageLongLivedAccessToken) {
 
   const response = await handleChannelApiCall({
     endpoint: `${pageId}/insights`,
-    queryParamString: `metric=page_impressions_unique,page_engaged_users&access_token=${pageLongLivedAccessToken}`,
+    queryParamString: `metric=page_post_engagements&period=day&date_preset=last_30d&access_token=${pageLongLivedAccessToken}`,
     channel: "facebook",
   });
 
