@@ -2,11 +2,12 @@
 Facebook API handler
   long lived access token docs: https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived/
   post docs: https://developers.facebook.com/docs/pages-api/posts/
+  insight docs: https://developers.facebook.com/docs/platforminsights/page
 */
 
 const { constants } = require("../helpers/constants");
 
-// TODO => move this to seperate file later =========================
+// TODO => move this to seperate file later
 const channelEndpointMap = {
   facebook: constants.fbGraphApiBaseUrl,
 };
@@ -138,12 +139,27 @@ async function getFirstPage(userLongLivedAccessToken, appScopedUserId) {
   return firstPage;
 }
 
+async function getPageInsights(pageId, pageLongLivedAccessToken) {
+  if (!pageId || !pageLongLivedAccessToken) {
+    throw new Error("Not enough data provided");
+  }
+
+  const response = await handleChannelApiCall({
+    endpoint: `${pageId}/insights`,
+    queryParamString: `metric=page_impressions_unique,page_engaged_users&access_token=${pageLongLivedAccessToken}`,
+    channel: "facebook",
+  });
+
+  return await response.json();
+}
+
 const Fb = {
   createPost: createPost,
   getMe: getMe,
   getPagePosts: getPagePosts,
   getUserLongLivedAccessToken: getUserLongLivedAccessToken,
   getFirstPage: getFirstPage,
+  getPageInsights: getPageInsights,
 };
 
 module.exports = { Fb };

@@ -50,8 +50,11 @@ router.delete("/removeConnection", verifyJWT, async function (req, res) {
 router.get("/getLatestPosts", verifyJWT, async function (req, res) {
   try {
     const { connectionId, page = 1 } = req.query;
+    const reqUser = req.user;
 
-    const connectionInfo = await db.query(`select * from connections where id='${connectionId}'`);
+    const connectionInfo = await db.query(
+      `select * from connections where id='${connectionId}' and user_id = '${reqUser.id}'`
+    );
 
     if (connectionInfo.rowCount < 1) {
       throw new Error("Connection wasn't found.");
@@ -73,6 +76,39 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
     }
 
     res.status(200).send({ success: true, posts: { data: [], paging: {} } });
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+});
+
+router.get("/getPageInsights", verifyJWT, async function (req, res) {
+  try {
+    const { connectionId } = req.query;
+    const reqUser = req.user;
+
+    const connectionInfo = await db.query(
+      `select * from connections where id='${connectionId}' and user_id = '${reqUser.id}'`
+    );
+
+    if (connectionInfo.rowCount < 1) {
+      throw new Error("Connection wasn't found.");
+    }
+
+    const { connection_type: connectionType, access_token: pageAccessToken, page_id: pageId } = connectionInfo.rows[0];
+
+    //add for more later ✨
+    if (connectionType === "facebook") {
+      if (!pageId || !pageAccessToken) {
+        res.status(200).send({ success: true, posts: {} });
+        return;
+      }
+
+      const insightsResp = await Fb.getPageInsights(pageId, pageAccessToken);
+      res.status(200).send({ success: true, data: insightsResp });
+      return;
+    }
+
+    res.status(200).send({ success: true, data: {} });
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
