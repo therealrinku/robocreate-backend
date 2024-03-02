@@ -62,16 +62,17 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
     //add for more later ✨
     if (connectionType === "facebook") {
       if (!pageId || !pageAccessToken) {
-        res.status(200).send({ success: true, posts: [] });
+        res.status(200).send({ success: true, posts: { data: [], paging: {} } });
         return;
       }
 
       const pagePosts = await Fb.getPagePosts(pageId, pageAccessToken);
+      // pagePosts response format => { data: [], paging: {} }
       res.status(200).send({ success: true, posts: pagePosts });
       return;
     }
 
-    res.status(200).send({ success: true, posts: [] });
+    res.status(200).send({ success: true, posts: { data: [], paging: {} } });
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
