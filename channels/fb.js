@@ -69,7 +69,7 @@ async function getPagePosts(pageId, pageAccessToken) {
 
   const response = await handleChannelApiCall({
     endpoint: `${pageId}/feed`,
-    queryParamString: `fields=likes,comments.limit(10),shares,full_picture,permalink_url,message,created_time`,
+    queryParamString: `fields=likes.summary(true),comments.summary(true),shares,full_picture,permalink_url,message,created_time`,
     bearerToken: pageAccessToken,
     channel: "facebook",
   });
