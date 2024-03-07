@@ -52,7 +52,7 @@ router.post("/create-account", async function (req, res) {
         const jwtObject = { email, id: response.rows[0].id };
         const accessToken = jwt.sign(jwtObject, constants.jwtSecretKey, { expiresIn: constants.jwtExpiry });
 
-        res.cookie("robocreateTkn", accessToken, cookieOptions);
+        res.cookie("robocreate_session", accessToken, cookieOptions);
         res.status(200).send({ success: true });
       }
     });
@@ -73,7 +73,7 @@ router.post("/session", async function (req, res) {
         const jwtObject = { email, id: response.rows[0].id };
         const accessToken = jwt.sign(jwtObject, constants.jwtSecretKey, { expiresIn: constants.jwtExpiry });
 
-        res.cookie("robocreateTkn", accessToken, cookieOptions);
+        res.cookie("robocreate_session", accessToken, cookieOptions);
         res.status(200).send({ success: true });
         return;
       }
@@ -93,7 +93,7 @@ router.delete("/session", verifyJWT, async function (req, res) {
       secure: true,
       sameSite: "none",
     };
-    res.cookie("robocreateTkn", "", deleteSessionCookieOptions);
+    res.cookie("robocreate_session", "", deleteSessionCookieOptions);
     res.status(200).send({ success: true, message: "Logout success" });
   } catch (err) {
     res.status(401).send({ error: err.message });
