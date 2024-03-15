@@ -642,10 +642,10 @@ side-channel@^1.0.4:
     get-intrinsic "^1.2.4"
     object-inspect "^1.13.1"
 
-socials.js@^0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/socials.js/-/socials.js-0.0.7.tgz#a71a47b498b34e989fb7eabac14ce522a250efdb"
-  integrity sha512-O6eRtD2RmGmLRMI7lko2xGUzUsxWKfhudUdTAlNSWhdPS5PAjbZpxvXXZB547HFB05jJHNELGs7FXtq54Hg0CQ==
+socials.js@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/socials.js/-/socials.js-0.0.8.tgz#c826a593f5a7491ed9b98d2b982fef4f7a7cadc8"
+  integrity sha512-pD6o/T5/XZeGnIPSk3HILAte6nm2ESdL52A1aESjindKLLtmpSs9eq2XnqxV7QaWH5ZcmMul97cc0z+Wbmx+0A==
 
 split2@^4.1.0:
   version "4.2.0"
