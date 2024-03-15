@@ -24,6 +24,6 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.3",
-    "socials.js": "^0.0.8"
+    "socials.js": "^0.0.9"
   }
 }
