@@ -1,7 +1,8 @@
 const { db } = require("../database/db");
+const { constants } = require("../helpers/constants");
 const { verifyJWT } = require("../middlewares/verifyJWT");
 const router = require("express").Router();
-const { Fb } = require("../channels/fb");
+const { FB } = require("socials.js");
 
 router.post("/createPost", verifyJWT, async function (req, res) {
   try {
@@ -23,7 +24,7 @@ router.post("/createPost", verifyJWT, async function (req, res) {
     const { connection_type: connectionType, access_token: pageAccessToken, page_id: pageId } = connectionInfo.rows[0];
 
     if (connectionType === "facebook") {
-      await Fb.createPost(pageId, req.body, pageAccessToken);
+      await FB.createPost(pageId, pageAccessToken, req.body);
       res.status(200).send({ success: true });
     }
   } catch (err) {
@@ -69,7 +70,7 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
         return;
       }
 
-      const pagePosts = await Fb.getPagePosts(pageId, pageAccessToken);
+      const pagePosts = await FB.getPagePosts(pageId, pageAccessToken);
       // pagePosts response format => { data: [], paging: {} }
       res.status(200).send({ success: true, posts: pagePosts });
       return;
@@ -99,11 +100,11 @@ router.get("/getPageInsights", verifyJWT, async function (req, res) {
     //add for more later ✨
     if (connectionType === "facebook") {
       if (!pageId || !pageAccessToken) {
-        res.status(200).send({ success: true, posts: {} });
+        res.status(200).send({ success: true, data: {} });
         return;
       }
 
-      const insightsResp = await Fb.getPageInsights(pageId, pageAccessToken);
+      const insightsResp = await FB.getPageInsights(pageId, pageAccessToken);
       res.status(200).send({ success: true, data: insightsResp });
       return;
     }
@@ -129,13 +130,14 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
     //supports connecting only one fb page at a time
     if (connectionFor === "facebook") {
       // STEP 1 => get app scoped user id aka user id
-      const { id: appScopedUserId } = await Fb.getMe(token);
+      const { id: appScopedUserId } = await FB.getMe(token);
       // STEP 2 => get user's long lived access token
-      const userLongLivedAccessToken = await Fb.getUserLongLivedAccessToken(token);
+      FB.setFbAppId(constants.fbAppId);
+      FB.setFbAppSecret(constants.fbAppSecret);
+      const userLongLivedAccessToken = await FB.getUserLongLivedAccessToken(token);
       // STEP 3 => get the first page's long lived access token
-      const firstPage = await Fb.getFirstPage(userLongLivedAccessToken, appScopedUserId);
-
-      const { access_token: pageAccessToken, id: pageId, name: pageName } = firstPage;
+      const pages = await FB.getAllPages(userLongLivedAccessToken, appScopedUserId);
+      const { access_token: pageAccessToken, id: pageId, name: pageName } = pages[0];
 
       const resp = await db.query(
         `insert into connections(user_id,connection_type, page_name,page_id, access_token) values('${reqUser.id}', 'facebook','${pageName}', '${pageId}', '${pageAccessToken}') returning id`
