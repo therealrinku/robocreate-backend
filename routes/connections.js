@@ -3,6 +3,7 @@ const { constants } = require("../helpers/constants");
 const { verifyJWT } = require("../middlewares/verifyJWT");
 const router = require("express").Router();
 const { FB } = require("socials.js");
+const { redis } = require("../redis/redis");
 
 router.post("/createPost", verifyJWT, async function (req, res) {
   try {
@@ -100,13 +101,24 @@ router.get("/getPageInsights", verifyJWT, async function (req, res) {
     //add for more later ✨
     if (connectionType === "facebook") {
       if (!pageId || !pageAccessToken) {
-        res.status(200).send({ success: true, data: {} });
-        return;
+        return res.status(200).send({ success: true, data: {} });
+      }
+
+      // check if redis has it before hitting fb endpoint
+      // if cache hits return cached insights
+      const redisKey = `insights-${connectionType}-${pageId}`;
+      const cachedInsights = await redis.get(redisKey);
+
+      if (cachedInsights) {
+        return res.status(200).send({ success: true, data: JSON.parse(cachedInsights) });
       }
 
       const insightsResp = await FB.getPageInsights(pageId, pageAccessToken);
-      res.status(200).send({ success: true, data: insightsResp });
-      return;
+
+      // save to redis, EXPIRES IN A DAY
+      await redis.set(redisKey, JSON.stringify(insightsResp), { EX: 86400 });
+
+      return res.status(200).send({ success: true, data: insightsResp });
     }
 
     res.status(200).send({ success: true, data: {} });
