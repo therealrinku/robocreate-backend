@@ -13,7 +13,7 @@ const cookieOptions = {
   sameSite: "none",
 };
 
-router.get("/me", verifyJWT, async function (req, res) {
+async function me(req, res) {
   try {
     const reqUser = req.user;
 
@@ -29,9 +29,9 @@ router.get("/me", verifyJWT, async function (req, res) {
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
-});
+}
 
-router.post("/create-account", async function (req, res) {
+async function createAccount(req, res) {
   const { email, password: rawPassword } = req.body;
 
   try {
@@ -59,9 +59,9 @@ router.post("/create-account", async function (req, res) {
   } catch (err) {
     res.status(422).send({ error: err.message });
   }
-});
+}
 
-router.post("/session", async function (req, res) {
+async function createSession(req, res) {
   const { email, password: rawPassword } = req.body;
 
   try {
@@ -83,9 +83,9 @@ router.post("/session", async function (req, res) {
   } catch (err) {
     res.status(401).send({ error: err.message });
   }
-});
+}
 
-router.delete("/session", verifyJWT, async function (req, res) {
+async function deleteSession(_req, res) {
   try {
     const deleteSessionCookieOptions = {
       maxAge: 0,
@@ -98,6 +98,11 @@ router.delete("/session", verifyJWT, async function (req, res) {
   } catch (err) {
     res.status(401).send({ error: err.message });
   }
-});
+}
+
+router.get("/me", verifyJWT, me);
+router.post("/create-account", createAccount);
+router.post("/session", createSession);
+router.delete("/session", verifyJWT, deleteSession);
 
 module.exports = router;

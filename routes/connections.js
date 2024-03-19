@@ -5,7 +5,7 @@ const router = require("express").Router();
 const { FB } = require("socials.js");
 const { redis } = require("../redis/redis");
 
-router.post("/createPost", verifyJWT, async function (req, res) {
+async function createPost(req, res) {
   try {
     const { connectionId } = req.query;
     const reqUser = req.user;
@@ -31,9 +31,9 @@ router.post("/createPost", verifyJWT, async function (req, res) {
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
-});
+}
 
-router.delete("/removeConnection", verifyJWT, async function (req, res) {
+async function removeConnection(req, res) {
   try {
     const { connectionId } = req.query;
     const reqUser = req.user;
@@ -47,9 +47,9 @@ router.delete("/removeConnection", verifyJWT, async function (req, res) {
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
-});
+}
 
-router.get("/getLatestPosts", verifyJWT, async function (req, res) {
+async function getLatestPosts(req, res) {
   try {
     const { connectionId, page = 1 } = req.query;
     const reqUser = req.user;
@@ -81,9 +81,9 @@ router.get("/getLatestPosts", verifyJWT, async function (req, res) {
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
-});
+}
 
-router.get("/getPageInsights", verifyJWT, async function (req, res) {
+async function getPageInsights(req, res) {
   try {
     const { connectionId } = req.query;
     const reqUser = req.user;
@@ -125,9 +125,9 @@ router.get("/getPageInsights", verifyJWT, async function (req, res) {
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
-});
+}
 
-router.post("/addConnection", verifyJWT, async function (req, res) {
+async function addConnection(req, res) {
   try {
     const { connectionFor, token } = req.body;
     const reqUser = req.user;
@@ -165,6 +165,12 @@ router.post("/addConnection", verifyJWT, async function (req, res) {
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
-});
+}
+
+router.post("/createPost", verifyJWT, createPost);
+router.delete("/removeConnection", verifyJWT, removeConnection);
+router.get("/getLatestPosts", verifyJWT, getLatestPosts);
+router.get("/getPageInsights", verifyJWT, getPageInsights);
+router.post("/addConnection", verifyJWT, addConnection);
 
 module.exports = router;
