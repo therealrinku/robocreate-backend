@@ -8,7 +8,7 @@ async function verifyJWT(req, res, next) {
 
     jwt.verify(accessToken, process.env.JWT_SECRET_KEY, (err, user) => {
       if (err) throw new Error(err);
-      //pass user id to the request
+      //pass user object to the request
       req.user = user;
       next();
     });
