@@ -7,11 +7,15 @@ const { redis } = require("../redis/redis");
 
 async function createPost(req, res) {
   try {
-    const { connectionId } = req.query;
+    const { connectionId, postType } = req.query;
     const reqUser = req.user;
 
     if (!req.body) {
       throw new Error("request body is required.");
+    }
+
+    if (!["image", "text"].includes(postType)) {
+      throw new Error("postType query param is either missing or invalid, image and text are only valid.");
     }
 
     const connectionInfo = await db.query(
@@ -25,8 +29,13 @@ async function createPost(req, res) {
     const { connection_type: connectionType, access_token: pageAccessToken, page_id: pageId } = connectionInfo.rows[0];
 
     if (connectionType === "facebook") {
-      await FB.createPost(pageId, pageAccessToken, req.body);
-      res.status(200).send({ success: true });
+      if (postType === "text") {
+        await FB.createPost(pageId, pageAccessToken, req.body);
+        res.status(200).send({ success: true });
+      } else if (postType == "image") {
+        await FB.createImagePost(pageId, pageAccessToken, req.body?.imageUrl);
+        res.status(200).send({ success: true });
+      }
     }
   } catch (err) {
     res.status(500).send({ error: err.message });
