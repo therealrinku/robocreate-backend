@@ -23,9 +23,11 @@ app.use(cookieParser());
 
 const usersRoute = require("./routes/users");
 const connectionsRoute = require("./routes/connections");
+const chatRoute  = require("./routes/chat");
 
 app.use("/users", usersRoute);
 app.use("/connections", connectionsRoute);
+app.use("/api/v1/chat", chatRoute);
 
 //first landing route
 app.get("/", (_, res) => res.status(200).send({ message: "Robocreate API is ready to serve." }));
