@@ -27,7 +27,7 @@ const handleResponse = (response) => {
 app.get("/", (req, res) => res.send("Express on Vercel"));
 
 // Endpoint to create or update a user
-app.put('/users/:userId', async (req, res) => {
+app.put('/create_or_update_user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const body = req.body;
@@ -39,7 +39,7 @@ app.put('/users/:userId', async (req, res) => {
 });
 
 // Endpoint to create or update a conversation
-app.put('/conversations/:conversationId', async (req, res) => {
+app.put('/create_or_update_conversation/:conversationId', async (req, res) => {
   try {
     const { conversationId } = req.params;
     const body = req.body;
@@ -51,7 +51,7 @@ app.put('/conversations/:conversationId', async (req, res) => {
 });
 
 // Endpoint to get a conversation
-app.get('/conversations/:conversationId', async (req, res) => {
+app.get('/get_conversation/:conversationId', async (req, res) => {
   try {
     const { conversationId } = req.params;
     const response = await axiosInstance.get(`/conversations/${conversationId}`);
@@ -62,7 +62,7 @@ app.get('/conversations/:conversationId', async (req, res) => {
 });
 
 // Endpoint to delete a conversation
-app.delete('/conversations/:conversationId', async (req, res) => {
+app.delete('/delete_conversation/:conversationId', async (req, res) => {
   try {
     const { conversationId } = req.params;
     const response = await axiosInstance.delete(`/conversations/${conversationId}`);
@@ -73,7 +73,7 @@ app.delete('/conversations/:conversationId', async (req, res) => {
 });
 
 // Endpoint to get public groups
-app.get('/conversations/public-groups', async (req, res) => {
+app.get('/get_public_groups', async (req, res) => {
   try {
     const filter = {
       custom: {
@@ -101,7 +101,7 @@ app.get('/conversations/public-groups', async (req, res) => {
 });
 
 // Endpoint to get a user's groups
-app.get('/users/:userId/groups', async (req, res) => {
+app.get('/get_my_groups/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const filter = {
@@ -130,7 +130,7 @@ app.get('/users/:userId/groups', async (req, res) => {
 });
 
 // Endpoint to get a user's friends
-app.get('/users/:userId/friends', async (req, res) => {
+app.get('/get_my_friends/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const filter = {
