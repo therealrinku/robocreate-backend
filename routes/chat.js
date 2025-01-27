@@ -38,6 +38,19 @@ app.put('/create_or_update_user/:userId', async (req, res) => {
   }
 });
 
+
+// Endpoint to create or update a user
+app.get('/list_messages/:conversationId', async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const response = await axiosInstance.get(`/conversations/${conversationId}/messages`);
+    res.json(handleResponse(response));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // leave the group
 app.delete('/leave_group/:conversationId/:userId', async (req, res) => {
   try {
