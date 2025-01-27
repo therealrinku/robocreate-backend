@@ -4,6 +4,8 @@ const TALKJS_API_KEY = process.env.TALKJS_API_KEY;
 const APP_ID = process.env.TALKJS_APP_ID;
 const BASE_URL = `https://api.talkjs.com/v1/${APP_ID}`;
 
+const app = require("express").Router();
+
 // Axios instance for making requests
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
