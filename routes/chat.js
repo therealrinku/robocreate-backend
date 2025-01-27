@@ -164,3 +164,5 @@ app.get('/api/v1/users/:userId/friends', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+module.exports = app;
