@@ -92,6 +92,7 @@ app.get('/get_public_groups', async (req, res) => {
       participants: Object.keys(conversation.participants),
       adminId: conversation.custom?.adminId,
       title: conversation.custom?.title,
+      photoUrl: conversation.photoUrl,
     }));
 
     res.json(finalResponse);
