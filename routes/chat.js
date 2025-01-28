@@ -38,6 +38,18 @@ app.put('/create_or_update_user/:userId', async (req, res) => {
   }
 });
 
+// Endpoint to update participation
+app.patch('/conversations/:conversationId/participants/:userId', async (req, res) => {
+  try {
+    const { conversationId, userId } = req.params;
+    const body = req.body;
+    const response = await axiosInstance.patch(`/conversations/${conversationId}/participants/${userId}`, body);
+    res.json(handleResponse(response));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Endpoint to create or update a user
 app.get('/get_group_members/:conversationId', async (req, res) => {
   try {
