@@ -208,20 +208,23 @@ app.get('/get_my_friends/:userId', async (req, res) => {
     const response = await axiosInstance.get(`/users/${userId}/conversations?filter=${encodedFilter}`);
     const data = handleResponse(response).data;
 
+     const allUsers = (await axiosInstance.get(`/users`)).data;
+
+
     const finalResponse = await Promise.all(
       data.map(async (conversation) => {
         const participantIds = Object.keys(conversation.participants);
         const otherParticipantIds = participantIds.filter(id => id !== userId);
-        // Replace this with your own logic to fetch user details
-        const otherParticipant = { id:2944, name: 'Dummy Friend', image: 'https://images.unsplash.com/photo-1737559217439-a5703e9b65cb?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw5OHx8fGVufDB8fHx8fA%3D%3D'}; // Mocked for now
 
+       const otherParticipant = allUsers.data.find(user=> user.id === otherParticipantIds[0]);
+        
         return {
           conversationId: conversation.id,
           friend: {
-                        id: otherParticipant.id,
-
+            id: otherParticipant.id,
             name: otherParticipant.name,
-            image: otherParticipant.image || null,
+            role: otherParticipant.role,
+            photoUrl: otherParticipant.photoUrl
           },
         };
       })
