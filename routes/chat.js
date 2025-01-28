@@ -44,7 +44,7 @@ app.get('/get_group_members/:conversationId', async (req, res) => {
     const { conversationId } = req.params;
     const body = req.body;
 
-    const allUsers = (await axiosInstance.get(`/${APP_ID}/users`)).data;
+    const allUsers = (await axiosInstance.get(`/users`)).data;
     const conversation = (await axiosInstance.get(`/conversations/${conversationId}`)).data;
 
     const participantIds = Object.keys(conversation.participants || {});
