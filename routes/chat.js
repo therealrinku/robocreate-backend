@@ -45,22 +45,22 @@ app.get('/get_group_members/:conversationId', async (req, res) => {
     const body = req.body;
 
     const allUsers = (await axiosInstance.get(`/users`)).data;
-    // const conversation = (await axiosInstance.get(`/conversations/${conversationId}`)).data;
+    const conversation = (await axiosInstance.get(`/conversations/${conversationId}`)).data;
 
-    // const participantIds = Object.keys(conversation.participants || {});
+    const participantIds = Object.keys(conversation.participants || {});
 
-    // const users = allUsers.data.filter(user=> participantIds.includes(user.id));
+    const users = allUsers.data.filter(user=> participantIds.includes(user.id));
 
-    // const response = users.map(user=>{
-    //   return {
-    //     id: user.id,
-    //     name: user.name,
-    //     role: user.role,
-    //     photoUrl: user.photoUrl
-    //   }
-    // });
+    const response = users.map(user=>{
+      return {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        photoUrl: user.photoUrl
+      }
+    });
     
-    return allUsers;
+    res.json(response);
     
   } catch (error) {
     res.status(500).json({ error: error.message });
