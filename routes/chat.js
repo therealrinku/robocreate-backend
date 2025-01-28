@@ -172,7 +172,7 @@ app.get('/get_my_friends/:userId', async (req, res) => {
         const participantIds = Object.keys(conversation.participants);
         const otherParticipantIds = participantIds.filter(id => id !== userId);
         // Replace this with your own logic to fetch user details
-        const otherParticipant = { id:3, name: 'Dummy Friend', image: 'https://images.unsplash.com/photo-1737559217439-a5703e9b65cb?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw5OHx8fGVufDB8fHx8fA%3D%3D'}; // Mocked for now
+        const otherParticipant = { id:124, name: 'Dummy Friend', image: 'https://images.unsplash.com/photo-1737559217439-a5703e9b65cb?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw5OHx8fGVufDB8fHx8fA%3D%3D'}; // Mocked for now
 
         return {
           conversationId: conversation.id,
