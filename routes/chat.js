@@ -38,6 +38,35 @@ app.put('/create_or_update_user/:userId', async (req, res) => {
   }
 });
 
+// Endpoint to create or update a user
+app.get('/get_group_members/:conversationId', async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const body = req.body;
+
+    const allUsers = (await axiosInstance.get(`/${APP_ID}/users`)).data;
+    const conversation = (await axiosInstance.get(`/conversations/${conversationId}`)).data;
+
+    const participantIds = Object.keys(conversation.participants || {});
+
+    const users = allUsers.data.filter(user=> participantIds.includes(user.id));
+
+    const response = users.map(user=>{
+      return {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        photoUrl: user.photoUrl
+      }
+    });
+    
+    return response;
+    
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Endpoint to create or update a user
 app.get('/list_messages/:conversationId', async (req, res) => {
